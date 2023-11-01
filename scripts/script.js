@@ -52,7 +52,7 @@
           
         // Boton de buscar por id
         btnGet1.addEventListener("click", () => {
-             const userId = inputGet1Id.value.trim(); // Trimmear el valor del input para eliminar espacios en blanco
+            const userId = inputGet1Id.value.trim();
         
             if (!userId) {
                 // Si el campo de entrada está vacío, muestra todos los elementos de la API
@@ -74,7 +74,13 @@
                         }
                         return response.json();
                     })
-                    .then((data) => displayResult(data))
+                    .then((data) => {
+                        if (data.id) {
+                            displayResult(data);
+                        } else {
+                            alert("El ID no se ha encontrado.");
+                        }
+                    })
                     .catch((error) => displayError(error.message));
             }
         });
@@ -109,73 +115,11 @@
 
         // Boton para modificar
         btnPut.addEventListener("click", () => { 
-            //Obtener los inputs del usuario
-            const userId = inputPutId.value;
-            const nombre = inputPutNombre.value;
-            const apellido = inputPutApellido.value;
             const modal = document.getElementById("dataModal");
-            const data = { name: nombre, lastname: apellido }; //Obtengo el nombre y el apellido
-
             const dataModal = new bootstrap.Modal(modal);
             dataModal.show();
 
-
-
-            // Botón "Guardar cambios" en el modal de edición
-    btnSendChanges.addEventListener("click", () => {
-        // Obtengo el ID, nombre y apellido del modal
-        const userId = inputPutId.value;
-        const nombre = inputPutNombre.value;
-        const apellido = inputPutApellido.value;
-        const updatedData = { name: nombre, lastname: apellido };
-
-    fetch(`https://65423669f0b8287df1ffb52d.mockapi.io/users/${userId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData), // Envía los datos actualizados al servidor
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        if (!userId) {
-            resultsList.innerHTML = `Debe ingresar un ID`;
-        } else {
-            const dataModal = new bootstrap.Modal(document.getElementById("dataModal"));
-            dataModal.hide(); // Cierra el modal
-
-            // Actualiza la lista de resultados con los nuevos datos
-            displayResult(data);
-
-            // Limpia los inputs
-            inputPutId.value = "";
-            inputPutNombre.value = "";
-            inputPutApellido.value = "";
-        }
         })
-        .catch((error) => displayError(error.message));
-    })});
-
-
-
-
-        // Boton eliminar
-        btnDelete.addEventListener("click", () => {
-            const userId = inputDelete.value;
-            fetch(`https://65423669f0b8287df1ffb52d.mockapi.io/users/${userId}`, {
-                method: "DELETE",
-            })
-                .then(() => {
-                    if(!userId){
-                        resultsList.innerHTML= `Debe ingresar un id`;
-                    } else{
-                    //displayResult({ message: "Registro eliminado" });
-                    resultsList.innerHTML = `Registro eliminado`;
-                    inputDelete.value = "";
-                    }
-            })
-                .catch((error) => displayError(error.message));
-        });
 
         // Botón "Guardar cambios" en el modal de edición
         btnSendChanges.addEventListener("click", () => {
@@ -194,13 +138,36 @@
             })
                 .then((response) => response.json())
                 .then((data) => {
-                    displayResult(data); //Mostrar los resultados
-                    // Cierra el modal
-                    const dataModal = new bootstrap.Modal(document.getElementById("dataModal"));
-                    dataModal.hide();
+                    if (data.id) {
+                        displayResult(data);
+                    } else {
+                        alert("El ID no se ha encontrado.");
+                    }
                 })
                 .catch((error) => displayError(error.message));
         });
+
+
+        // Boton eliminar
+        btnDelete.addEventListener("click", () => {
+            const userId = inputDelete.value;
+            fetch(`https://65423669f0b8287df1ffb52d.mockapi.io/users/${userId}`, {
+                method: "DELETE",
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.id) {
+                    resultsList.innerHTML = `Registro eliminado`;
+                    inputDelete.value = "";
+                } else {
+                    alert("El ID no se ha encontrado.");
+                }
+            })
+          
+                
+                .catch((error) => displayError(error.message));
+            })
+
 
         function displayResult(result) { //Metodo para mostrar cosas 
             resultsList.innerHTML = `<li>ID: ${result.id}, Nombre: ${result.name}, Apellido: ${result.lastname}</li>`;
@@ -212,7 +179,7 @@
     
         for (const user of result) {
             const listItem = document.createElement("li");
-            listItem.innerHTML = `ID: ${user.id}, Nombre: ${user.name}, Apellido: ${user.lastname}`;
+            listItem.innerHTML = `ID: ${user.id} <br> Nombre: ${user.name} <br> Apellido: ${user.lastname} <br> <br>`;
             resultsList.appendChild(listItem);
          }
 }
